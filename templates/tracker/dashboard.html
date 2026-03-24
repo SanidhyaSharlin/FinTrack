@@ -1,0 +1,401 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Expense Tracker{% endblock %}
+
+{% block content %}
+<style>
+    .transaction-row {
+        border-bottom: 1px solid var(--glass-border);
+        transition: background-color 0.2s ease, transform 0.2s ease;
+    }
+    .transaction-row:last-child {
+        border-bottom: none;
+    }
+    .transaction-row:hover {
+        background-color: rgba(141, 110, 99, 0.04);
+        transform: scale(1.005);
+    }
+    .summary-card-icon {
+        font-size: 2.2rem;
+        margin-bottom: 1rem;
+        opacity: 0.85;
+    }
+    .number-display {
+        font-family: var(--font-body) !important;
+    }
+    
+    /* Responsive Grid Architecture */
+    .dashboard-grid-2, .dashboard-grid-3, .dashboard-grid-4, .dashboard-grid-tables {
+        display: grid;
+        gap: 2rem;
+    }
+    .dashboard-grid-2 { grid-template-columns: repeat(2, 1fr); margin-bottom: 2.5rem; }
+    .dashboard-grid-3 { grid-template-columns: repeat(3, 1fr); margin-bottom: 3rem; }
+    .dashboard-grid-4 { grid-template-columns: repeat(4, 1fr); margin-bottom: 4rem; }
+    .dashboard-grid-tables { grid-template-columns: 1fr 1fr; gap: 2.5rem; }
+    
+    .filter-form { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: flex-end; }
+    .filter-group { flex: 1; min-width: 140px; }
+    .filter-actions { display: flex; gap: 0.8rem; }
+
+    @media (max-width: 768px) {
+        .dashboard-grid-2, .dashboard-grid-3, .dashboard-grid-4, .dashboard-grid-tables {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .filter-group { min-width: 100%; }
+        .filter-actions { width: 100%; flex-direction: column; gap: 0.5rem; }
+        .filter-actions .btn { width: 100%; text-align: center; }
+        .summary-card-icon { font-size: 1.8rem; margin-bottom: 0.5rem; }
+    }
+</style>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem;">
+    <h1>Financial Overview</h1>
+    <a href="{% url 'add_transaction' %}" class="btn btn-primary"><i class="fa-solid fa-plus" style="margin-right: 8px;"></i>New Transaction</a>
+</div>
+
+<!-- Filter Section -->
+<div class="glass-card" style="margin-bottom: 2.5rem;">
+    <form method="GET" class="filter-form">
+        <div class="filter-group">
+            <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; font-weight: 600;"><i class="fa-solid fa-filter" style="margin-right: 6px;"></i>Type</label>
+            <select name="category_type" class="form-input" style="width: 100%; cursor: pointer;">
+                <option value="">All Types</option>
+                <option value="income" {% if filter_category_type == 'income' %}selected{% endif %}>Income</option>
+                <option value="expense" {% if filter_category_type == 'expense' %}selected{% endif %}>Expense</option>
+                <option value="savings" {% if filter_category_type == 'savings' %}selected{% endif %}>Savings</option>
+                <option value="debt" {% if filter_category_type == 'debt' %}selected{% endif %}>Debt</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; font-weight: 600;">Category</label>
+            <input type="text" name="category" class="form-input" placeholder="e.g. Food, Salary" value="{{ filter_category|default:'' }}" style="width: 100%;">
+        </div>
+        <div class="filter-group">
+            <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; font-weight: 600;"><i class="fa-regular fa-calendar" style="margin-right: 6px;"></i>Start Date</label>
+            <input type="date" name="start_date" class="form-input" value="{{ filter_start_date|default:'' }}" style="width: 100%;">
+        </div>
+        <div class="filter-group">
+            <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; font-weight: 600;"><i class="fa-regular fa-calendar" style="margin-right: 6px;"></i>End Date</label>
+            <input type="date" name="end_date" class="form-input" value="{{ filter_end_date|default:'' }}" style="width: 100%;">
+        </div>
+        <div class="filter-actions">
+            <button type="submit" class="btn btn-primary" style="height: calc(1.5rem + 2px + 1.5rem + 4px); padding: 0 1.5rem;">Apply</button>
+            <a href="{% url 'dashboard' %}" class="btn glass-card" style="height: calc(1.5rem + 2px + 1.5rem + 4px); padding: 0 1.5rem; line-height: 2.2rem; text-decoration: none; text-align: center; border: 1px solid var(--glass-border); box-sizing: border-box; background: var(--glass-bg); color: var(--text-main);">Clear</a>
+        </div>
+    </form>
+</div>
+
+<!-- Balances Row -->
+<div class="dashboard-grid-2">
+    <!-- Net Balance Card -->
+    <div class="glass-card" style="padding: 2rem; text-align: center; position: relative;">
+        <i class="fa-solid fa-scale-balanced summary-card-icon" style="color: var(--primary);"></i>
+        <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Net Balance</p>
+        <h2 class="number-display" style="margin-bottom: 0.5rem; font-size: 2.4rem; color: var(--text-main);">₹ {{ net_balance|floatformat:2 }}</h2>
+        <p style="color: var(--text-muted); font-size: 0.85rem; opacity: 0.8;">Income - Expense</p>
+    </div>
+
+    <!-- Remaining Funds Card -->
+    <div class="glass-card" style="padding: 2rem; text-align: center; position: relative; border-left: 5px solid var(--primary);">
+        <i class="fa-solid fa-sack-dollar summary-card-icon" style="color: var(--primary);"></i>
+        <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Final Remaining</p>
+        <h2 class="number-display" style="margin-bottom: 0.5rem; font-size: 2.4rem; color: var(--text-main);">₹ {{ remaining_balance|floatformat:2 }}</h2>
+        <p style="color: var(--text-muted); font-size: 0.85rem; opacity: 0.8;">After Savings & Debt</p>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="dashboard-grid-3">
+    <div class="glass-card" style="padding: 1.5rem; text-align: center;">
+        <h3 style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--text-main);"><i class="fa-solid fa-chart-pie" style="margin-right: 8px;"></i>Expenses by Category</h3>
+        <canvas id="expenseChart" height="200"></canvas>
+    </div>
+    <div class="glass-card" style="padding: 1.5rem; text-align: center;">
+        <h3 style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--text-main);"><i class="fa-solid fa-chart-line" style="margin-right: 8px;"></i>Savings Distribution</h3>
+        <canvas id="savingsChart" height="200"></canvas>
+    </div>
+    <div class="glass-card" style="padding: 1.5rem; text-align: center;">
+        <h3 style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--text-main);"><i class="fa-solid fa-chart-column" style="margin-right: 8px;"></i>Financial Overview</h3>
+        <canvas id="overviewChart" height="200"></canvas>
+    </div>
+</div>
+
+<!-- 4 Summary Cards Row -->
+<div class="dashboard-grid-4">
+    <!-- Income -->
+    <div class="glass-card" style="padding: 1.5rem; text-align: center; border-left: 4px solid var(--success);">
+        <i class="fa-solid fa-arrow-trend-up summary-card-icon" style="color: var(--success); font-size: 1.8rem;"></i>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Total Income</p>
+        <h2 class="number-display" style="margin-bottom: 0; font-size: 1.6rem; color: var(--success);">+ ₹{{ total_income|floatformat:2 }}</h2>
+    </div>
+
+    <!-- Expense -->
+    <div class="glass-card" style="padding: 1.5rem; text-align: center; border-left: 4px solid var(--danger);">
+        <i class="fa-solid fa-arrow-trend-down summary-card-icon" style="color: var(--danger); font-size: 1.8rem;"></i>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Total Expense</p>
+        <h2 class="number-display" style="margin-bottom: 0; font-size: 1.6rem; color: var(--danger);">- ₹{{ total_expense|floatformat:2 }}</h2>
+    </div>
+
+    <!-- Savings -->
+    <div class="glass-card" style="padding: 1.5rem; text-align: center; border-left: 4px solid #455A64;">
+        <i class="fa-solid fa-piggy-bank summary-card-icon" style="color: #455A64; font-size: 1.8rem;"></i>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Total Savings</p>
+        <h2 class="number-display" style="margin-bottom: 0; font-size: 1.6rem; color: #455A64;">&bull; ₹{{ total_savings|floatformat:2 }}</h2>
+    </div>
+
+    <!-- Debt -->
+    <div class="glass-card" style="padding: 1.5rem; text-align: center; border-left: 4px solid #E64A19;">
+        <i class="fa-solid fa-building-columns summary-card-icon" style="color: #E64A19; font-size: 1.8rem;"></i>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Total Debt</p>
+        <h2 class="number-display" style="margin-bottom: 0; font-size: 1.6rem; color: #E64A19;">! ₹{{ total_debt|floatformat:2 }}</h2>
+    </div>
+</div>
+
+
+<div class="dashboard-grid-tables">
+    <!-- Income Section -->
+    <div class="glass-card" style="margin-bottom: 2rem;">
+        <h3 style="margin-bottom: 1.5rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--glass-border); color: var(--success);"><i class="fa-solid fa-arrow-trend-up" style="margin-right: 10px;"></i>Income</h3>
+        {% if income_transactions %}
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; min-width: 500px; border-collapse: collapse;">
+                    <thead>
+                        <tr style="text-align: left; border-bottom: 2px solid var(--glass-border);">
+                            <th style="padding: 0.75rem 1rem; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; font-weight: 600;">Date</th>
+                            <th style="padding: 0.75rem 1rem; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; font-weight: 600;">Category</th>
+                            <th style="padding: 0.75rem 1rem; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; font-weight: 600; text-align: right;">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaction in income_transactions %}
+                            <tr class="transaction-row">
+                                <td style="padding: 1.2rem 1rem; font-size: 0.95rem;">{{ transaction.date|date:"M d, Y" }}</td>
+                                <td style="padding: 1.2rem 1rem; font-weight: 500;">
+                                    {{ transaction.category }}
+                                    {% if transaction.note %}<br><span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">{{ transaction.note }}</span>{% endif %}
+                                </td>
+                                <td style="padding: 1.2rem 1rem; font-weight: 700; color: var(--success); text-align: right;">+₹{{ transaction.amount }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 3rem; color: var(--text-muted); font-style: italic; background-color: rgba(62, 39, 35, 0.02); border-radius: 0.5rem;"><i class="fa-solid fa-leaf" style="font-size: 2rem; opacity: 0.4; margin-bottom: 1rem; display: block;"></i>No income recorded yet.</div>
+        {% endif %}
+    </div>
+
+    <!-- Expense Section -->
+    <div class="glass-card" style="margin-bottom: 2rem;">
+        <h3 style="margin-bottom: 1.5rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--glass-border); color: var(--danger);"><i class="fa-solid fa-arrow-trend-down" style="margin-right: 10px;"></i>Expenses</h3>
+        {% if expense_transactions %}
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; min-width: 500px; border-collapse: collapse;">
+                    <thead>
+                        <tr style="text-align: left; border-bottom: 2px solid var(--glass-border);">
+                            <th style="padding: 0.75rem 1rem; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; font-weight: 600;">Date</th>
+                            <th style="padding: 0.75rem 1rem; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; font-weight: 600;">Category</th>
+                            <th style="padding: 0.75rem 1rem; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; font-weight: 600; text-align: right;">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaction in expense_transactions %}
+                            <tr class="transaction-row">
+                                <td style="padding: 1.2rem 1rem; font-size: 0.95rem;">{{ transaction.date|date:"M d, Y" }}</td>
+                                <td style="padding: 1.2rem 1rem; font-weight: 500;">
+                                    {{ transaction.category }}
+                                    {% if transaction.note %}<br><span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">{{ transaction.note }}</span>{% endif %}
+                                </td>
+                                <td style="padding: 1.2rem 1rem; font-weight: 700; color: var(--danger); text-align: right;">-₹{{ transaction.amount }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 3rem; color: var(--text-muted); font-style: italic; background-color: rgba(62, 39, 35, 0.02); border-radius: 0.5rem;"><i class="fa-solid fa-leaf" style="font-size: 2rem; opacity: 0.4; margin-bottom: 1rem; display: block;"></i>No expenses recorded yet.</div>
+        {% endif %}
+    </div>
+
+    <!-- Savings Section -->
+    <div class="glass-card" style="margin-bottom: 2rem;">
+        <h3 style="margin-bottom: 1.5rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--glass-border); color: #455A64;"><i class="fa-solid fa-piggy-bank" style="margin-right: 10px;"></i>Savings</h3>
+        {% if savings_transactions %}
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="text-align: left; border-bottom: 2px solid var(--glass-border);">
+                            <th style="padding: 0.75rem 1rem; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; font-weight: 600;">Date</th>
+                            <th style="padding: 0.75rem 1rem; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; font-weight: 600;">Category</th>
+                            <th style="padding: 0.75rem 1rem; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; font-weight: 600; text-align: right;">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaction in savings_transactions %}
+                            <tr class="transaction-row">
+                                <td style="padding: 1.2rem 1rem; font-size: 0.95rem;">{{ transaction.date|date:"M d, Y" }}</td>
+                                <td style="padding: 1.2rem 1rem; font-weight: 500;">
+                                    {{ transaction.category }}
+                                    {% if transaction.note %}<br><span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">{{ transaction.note }}</span>{% endif %}
+                                </td>
+                                <td style="padding: 1.2rem 1rem; font-weight: 700; color: #455A64; text-align: right;">₹{{ transaction.amount }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 3rem; color: var(--text-muted); font-style: italic; background-color: rgba(62, 39, 35, 0.02); border-radius: 0.5rem;"><i class="fa-solid fa-leaf" style="font-size: 2rem; opacity: 0.4; margin-bottom: 1rem; display: block;"></i>No savings recorded yet.</div>
+        {% endif %}
+    </div>
+
+    <!-- Debt Section -->
+    <div class="glass-card" style="margin-bottom: 2rem;">
+        <h3 style="margin-bottom: 1.5rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--glass-border); color: #E64A19;"><i class="fa-solid fa-building-columns" style="margin-right: 10px;"></i>Debt</h3>
+        {% if debt_transactions %}
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="text-align: left; border-bottom: 2px solid var(--glass-border);">
+                            <th style="padding: 0.75rem 1rem; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; font-weight: 600;">Date</th>
+                            <th style="padding: 0.75rem 1rem; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; font-weight: 600;">Category</th>
+                            <th style="padding: 0.75rem 1rem; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; font-weight: 600; text-align: right;">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaction in debt_transactions %}
+                            <tr class="transaction-row">
+                                <td style="padding: 1.2rem 1rem; font-size: 0.95rem;">{{ transaction.date|date:"M d, Y" }}</td>
+                                <td style="padding: 1.2rem 1rem; font-weight: 500;">
+                                    {{ transaction.category }}
+                                    {% if transaction.note %}<br><span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">{{ transaction.note }}</span>{% endif %}
+                                </td>
+                                <td style="padding: 1.2rem 1rem; font-weight: 700; color: #E64A19; text-align: right;">₹{{ transaction.amount }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 3rem; color: var(--text-muted); font-style: italic; background-color: rgba(62, 39, 35, 0.02); border-radius: 0.5rem;"><i class="fa-solid fa-leaf" style="font-size: 2rem; opacity: 0.4; margin-bottom: 1rem; display: block;"></i>No debt recorded yet.</div>
+        {% endif %}
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Global Chart.js settings for glassmorphism theme
+    Chart.defaults.color = 'var(--text-main)';
+    Chart.defaults.font.family = "'Poppins', sans-serif";
+
+    // Reusable cohesive palette
+    const colorPalette = [
+        '#3E2723', // Deep Brown
+        '#5D4037', // Dark Brown
+        '#795548', // Base Brown
+        '#8D6E63', // Soft Brown (Primary)
+        '#A1887F', // Light Brown
+        '#BCAAA4'  // Very Light Brown
+    ];
+
+    // 1. Expense Categories Chart (Doughnut)
+    const expenseLabels = {{ expense_labels_json|safe }};
+    const expenseValues = {{ expense_values_json|safe }};
+    
+    if (expenseValues.length > 0) {
+        new Chart(document.getElementById('expenseChart'), {
+            type: 'doughnut',
+            data: {
+                labels: expenseLabels,
+                datasets: [{
+                    data: expenseValues,
+                    backgroundColor: colorPalette,
+                    borderWidth: 0,
+                    hoverOffset: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 20, font: { family: 'Poppins' } } } },
+                cutout: '75%',
+                layout: { padding: 10 }
+            }
+        });
+    }
+
+    // 2. Savings Distribution Chart (Doughnut)
+    const savingsLabels = {{ savings_labels_json|safe }};
+    const savingsValues = {{ savings_values_json|safe }};
+    
+    if (savingsValues.length > 0) {
+        new Chart(document.getElementById('savingsChart'), {
+            type: 'doughnut',
+            data: {
+                labels: savingsLabels,
+                datasets: [{
+                    data: savingsValues,
+                    backgroundColor: [
+                        '#8D6E63', // Soft Brown
+                        '#BCAAA4', // Very Light Brown
+                        '#5D4037', // Dark Brown
+                        '#D7CCC8'  // Lighter Brown
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 20, font: { family: 'Poppins' } } } },
+                cutout: '75%',
+                layout: { padding: 10 }
+            }
+        });
+    }
+
+    // 3. Financial Overview Chart (Bar)
+    const overviewLabels = {{ overview_labels_json|safe }};
+    const overviewValues = {{ overview_values_json|safe }};
+    
+    new Chart(document.getElementById('overviewChart'), {
+        type: 'bar',
+        data: {
+            labels: overviewLabels,
+            datasets: [{
+                label: 'Amount (₹)',
+                data: overviewValues,
+                backgroundColor: [
+                    '#795548',  // Income (Base Brown)
+                    '#3E2723',  // Expense (Deep Brown)
+                    '#A1887F', // Savings (Light Brown)
+                    '#5D4037'  // Debt (Dark Brown)
+                ],
+                borderRadius: 6,
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(62, 39, 35, 0.05)', drawBorder: false },
+                    ticks: { font: { family: 'Poppins' } }
+                },
+                x: {
+                    grid: { display: false, drawBorder: false },
+                    ticks: { font: { family: 'Poppins' } }
+                }
+            },
+            plugins: {
+                legend: { display: false } // Hide legend for single dataset bars
+            },
+            layout: { padding: { top: 20 } }
+        }
+    });
+</script>
+
+{% endblock %}

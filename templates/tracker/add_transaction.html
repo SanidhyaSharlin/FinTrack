@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Transaction - Expense Tracker{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+    <div class="glass-card">
+        <h1><i class="fa-solid fa-circle-plus" style="margin-right: 12px; color: var(--primary);"></i>Add Transaction</h1>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div style="margin-top: 2rem;">
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Save Transaction</button>
+            </div>
+        </form>
+        <div style="margin-top: 1rem; text-align: center;">
+            <a href="{% url 'dashboard' %}" style="color: var(--text-muted); text-decoration: none; font-size: 0.9rem;">Cancel</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
