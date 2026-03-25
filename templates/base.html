@@ -9,16 +9,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            /* Brown & Cream Palette */
-            --primary: #8D6E63;        /* Soft Brown */
-            --primary-hover: #5D4037;  /* Darker Brown for hover states */
-            --bg-dark: #F5EFE6;        /* Cream Background */
+            /* Dark Brown & White Palette */
+            --primary: #3E2723;        /* Dark Brown */
+            --primary-hover: #2A1A17;  /* Deeper Dark Brown for hover states */
+            --bg-dark: #FFFFFF;        /* Pure White Background */
             --glass-bg: #FFFFFF;       /* Solid White for cards */
-            --glass-border: #E0D4C8;   /* Light Beige border */
+            --glass-border: #E8E8E8;   /* Light border */
             --text-main: #3E2723;      /* Deep Brown for text */
-            --text-muted: #8D6E63;     /* Muted/Soft Brown */
-            --success: #689F38;        /* Muted Green */
-            --danger: #D32F2F;         /* Muted Red */
+            --text-muted: #795548;     /* Soft Brown */
+            --success: #4E342E;        /* Dark Brown variant */
+            --danger: #6D4C41;         /* Medium Brown variant */
             
             /* Classy Typography */
             --font-display: 'Playfair Display', serif;
@@ -38,19 +38,28 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            align-items: center; /* ensures all children center by default */
         }
 
         nav {
-            padding: 1.5rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            width: 100%;
+            padding: 1.5rem 0;
             background-color: #FFFFFF;
             border-bottom: 1px solid var(--glass-border);
             position: sticky;
             top: 0;
             z-index: 100;
             box-shadow: 0 4px 15px rgba(62, 39, 35, 0.05);
+        }
+
+        .nav-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .logo {
@@ -93,7 +102,7 @@
 
         .btn-primary {
             background: var(--primary);
-            color: white;
+            color: #FFFFFF !important;
             box-shadow: 0 4px 10px rgba(141, 110, 99, 0.25);
         }
 
@@ -101,7 +110,7 @@
             background: var(--primary-hover);
             transform: translateY(-2px);
             box-shadow: 0 8px 15px rgba(93, 64, 55, 0.35);
-            color: white;
+            color: #FFFFFF !important;
         }
 
         .container {
@@ -118,6 +127,7 @@
             padding: 2.5rem;
             box-shadow: 0 4px 20px rgba(62, 39, 35, 0.05); /* Subtle brown shadow */
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            min-width: 0;
         }
 
         .glass-card:hover {
@@ -156,6 +166,7 @@
             color: var(--text-muted);
             border-top: 1px solid var(--glass-border);
             background-color: #FFFFFF;
+            width: 100%;
         }
 
         /* Forms Styling */
@@ -191,7 +202,8 @@
 
         /* Mobile Responsiveness */
         @media (max-width: 768px) {
-            nav { padding: 1rem; flex-direction: column; gap: 1rem; text-align: center; }
+            nav { padding: 1rem 0; }
+            .nav-container { flex-direction: column; gap: 1rem; text-align: center; }
             .nav-links { flex-wrap: wrap; justify-content: center; gap: 1rem; }
             h1 { font-size: 1.8rem; margin-bottom: 1rem; }
             h2 { font-size: 1.5rem; margin-bottom: 1rem; }
@@ -204,20 +216,22 @@
 </head>
 <body>
     <nav>
-        <a href="{% url 'dashboard' %}" class="logo">FinTrack</a>
-        <div class="nav-links">
-            {% if user.is_authenticated %}
-                <a href="{% url 'dashboard' %}">Dashboard</a>
-                <a href="{% url 'add_transaction' %}" class="btn btn-primary">Add Transaction</a>
-                <span style="color: var(--text-muted)">Hi, {{ user.username }}</span>
-                <form action="{% url 'logout' %}" method="post" style="display:inline;">
-                    {% csrf_token %}
-                    <button type="submit" style="background:none; border:none; padding:0; font:inherit; color:var(--text-main); cursor:pointer; font-weight:500; transition: color 0.3s;">Logout</button>
-                </form>
-            {% else %}
-                <a href="{% url 'login' %}">Login</a>
-                <a href="{% url 'register' %}" class="btn btn-primary">Sign Up</a>
-            {% endif %}
+        <div class="nav-container">
+            <a href="{% url 'dashboard' %}" class="logo">FinTrack</a>
+            <div class="nav-links">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}">Dashboard</a>
+                    <a href="{% url 'add_transaction' %}" class="btn btn-primary">Add Transaction</a>
+                    <span style="color: var(--text-muted)">Hi, {{ user.username }}</span>
+                    <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" style="background:none; border:none; padding:0; font:inherit; color:var(--text-main); cursor:pointer; font-weight:500; transition: color 0.3s;">Logout</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'login' %}">Login</a>
+                    <a href="{% url 'register' %}" class="btn btn-primary">Sign Up</a>
+                {% endif %}
+            </div>
         </div>
     </nav>
 

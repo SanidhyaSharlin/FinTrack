@@ -140,17 +140,17 @@
     </div>
 
     <!-- Savings -->
-    <div class="glass-card" style="padding: 1.5rem; text-align: center; border-left: 4px solid #455A64;">
-        <i class="fa-solid fa-piggy-bank summary-card-icon" style="color: #455A64; font-size: 1.8rem;"></i>
+    <div class="glass-card" style="padding: 1.5rem; text-align: center; border-left: 4px solid #8D6E63;">
+        <i class="fa-solid fa-piggy-bank summary-card-icon" style="color: #8D6E63; font-size: 1.8rem;"></i>
         <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Total Savings</p>
-        <h2 class="number-display" style="margin-bottom: 0; font-size: 1.6rem; color: #455A64;">&bull; ₹{{ total_savings|floatformat:2 }}</h2>
+        <h2 class="number-display" style="margin-bottom: 0; font-size: 1.6rem; color: #8D6E63;">&bull; ₹{{ total_savings|floatformat:2 }}</h2>
     </div>
 
     <!-- Debt -->
-    <div class="glass-card" style="padding: 1.5rem; text-align: center; border-left: 4px solid #E64A19;">
-        <i class="fa-solid fa-building-columns summary-card-icon" style="color: #E64A19; font-size: 1.8rem;"></i>
+    <div class="glass-card" style="padding: 1.5rem; text-align: center; border-left: 4px solid #A1887F;">
+        <i class="fa-solid fa-building-columns summary-card-icon" style="color: #A1887F; font-size: 1.8rem;"></i>
         <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Total Debt</p>
-        <h2 class="number-display" style="margin-bottom: 0; font-size: 1.6rem; color: #E64A19;">! ₹{{ total_debt|floatformat:2 }}</h2>
+        <h2 class="number-display" style="margin-bottom: 0; font-size: 1.6rem; color: #A1887F;">! ₹{{ total_debt|floatformat:2 }}</h2>
     </div>
 </div>
 
@@ -161,7 +161,7 @@
         <h3 style="margin-bottom: 1.5rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--glass-border); color: var(--success);"><i class="fa-solid fa-arrow-trend-up" style="margin-right: 10px;"></i>Income</h3>
         {% if income_transactions %}
             <div style="overflow-x: auto;">
-                <table style="width: 100%; min-width: 500px; border-collapse: collapse;">
+                <table style="width: 100%; border-collapse: collapse;">
                     <thead>
                         <tr style="text-align: left; border-bottom: 2px solid var(--glass-border);">
                             <th style="padding: 0.75rem 1rem; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; font-weight: 600;">Date</th>
@@ -193,7 +193,7 @@
         <h3 style="margin-bottom: 1.5rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--glass-border); color: var(--danger);"><i class="fa-solid fa-arrow-trend-down" style="margin-right: 10px;"></i>Expenses</h3>
         {% if expense_transactions %}
             <div style="overflow-x: auto;">
-                <table style="width: 100%; min-width: 500px; border-collapse: collapse;">
+                <table style="width: 100%; border-collapse: collapse;">
                     <thead>
                         <tr style="text-align: left; border-bottom: 2px solid var(--glass-border);">
                             <th style="padding: 0.75rem 1rem; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; font-weight: 600;">Date</th>
@@ -222,7 +222,7 @@
 
     <!-- Savings Section -->
     <div class="glass-card" style="margin-bottom: 2rem;">
-        <h3 style="margin-bottom: 1.5rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--glass-border); color: #455A64;"><i class="fa-solid fa-piggy-bank" style="margin-right: 10px;"></i>Savings</h3>
+        <h3 style="margin-bottom: 1.5rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--glass-border); color: #8D6E63;"><i class="fa-solid fa-piggy-bank" style="margin-right: 10px;"></i>Savings</h3>
         {% if savings_transactions %}
             <div style="overflow-x: auto;">
                 <table style="width: 100%; border-collapse: collapse;">
@@ -241,7 +241,7 @@
                                     {{ transaction.category }}
                                     {% if transaction.note %}<br><span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">{{ transaction.note }}</span>{% endif %}
                                 </td>
-                                <td style="padding: 1.2rem 1rem; font-weight: 700; color: #455A64; text-align: right;">₹{{ transaction.amount }}</td>
+                                <td style="padding: 1.2rem 1rem; font-weight: 700; color: #8D6E63; text-align: right;">₹{{ transaction.amount }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -254,7 +254,7 @@
 
     <!-- Debt Section -->
     <div class="glass-card" style="margin-bottom: 2rem;">
-        <h3 style="margin-bottom: 1.5rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--glass-border); color: #E64A19;"><i class="fa-solid fa-building-columns" style="margin-right: 10px;"></i>Debt</h3>
+        <h3 style="margin-bottom: 1.5rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--glass-border); color: #A1887F;"><i class="fa-solid fa-building-columns" style="margin-right: 10px;"></i>Debt</h3>
         {% if debt_transactions %}
             <div style="overflow-x: auto;">
                 <table style="width: 100%; border-collapse: collapse;">
@@ -273,7 +273,7 @@
                                     {{ transaction.category }}
                                     {% if transaction.note %}<br><span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">{{ transaction.note }}</span>{% endif %}
                                 </td>
-                                <td style="padding: 1.2rem 1rem; font-weight: 700; color: #E64A19; text-align: right;">₹{{ transaction.amount }}</td>
+                                <td style="padding: 1.2rem 1rem; font-weight: 700; color: #A1887F; text-align: right;">₹{{ transaction.amount }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -291,14 +291,14 @@
     Chart.defaults.color = 'var(--text-main)';
     Chart.defaults.font.family = "'Poppins', sans-serif";
 
-    // Reusable cohesive palette
+    // Reusable cohesive palette with distinct browns
     const colorPalette = [
-        '#3E2723', // Deep Brown
-        '#5D4037', // Dark Brown
-        '#795548', // Base Brown
-        '#8D6E63', // Soft Brown (Primary)
-        '#A1887F', // Light Brown
-        '#BCAAA4'  // Very Light Brown
+        '#3E2723', // Espresso
+        '#8B4513', // Saddle Brown
+        '#CD853F', // Caramel Brown
+        '#D2B48C', // Tan 
+        '#F5DEB3', // Wheat (Cream)
+        '#FFF8DC'  // Cornsilk (Light Cream)
     ];
 
     // 1. Expense Categories Chart (Doughnut)
@@ -338,10 +338,10 @@
                 datasets: [{
                     data: savingsValues,
                     backgroundColor: [
-                        '#8D6E63', // Soft Brown
-                        '#BCAAA4', // Very Light Brown
-                        '#5D4037', // Dark Brown
-                        '#D7CCC8'  // Lighter Brown
+                        '#F5DEB3', // Cream
+                        '#D2B48C', // Tan
+                        '#CD853F', // Caramel
+                        '#8B4513', // Saddle
                     ],
                     borderWidth: 0,
                     hoverOffset: 6
@@ -368,10 +368,10 @@
                 label: 'Amount (₹)',
                 data: overviewValues,
                 backgroundColor: [
-                    '#795548',  // Income (Base Brown)
-                    '#3E2723',  // Expense (Deep Brown)
-                    '#A1887F', // Savings (Light Brown)
-                    '#5D4037'  // Debt (Dark Brown)
+                    '#3E2723',  // Income - Espresso (Very Dark)
+                    '#8B4513',  // Expense - Saddle Brown (Rich/Mid)
+                    '#CD853F',  // Savings - Caramel Brown (Golden)
+                    '#F5DEB3'   // Debt - Cream (Light)
                 ],
                 borderRadius: 6,
                 borderWidth: 0
